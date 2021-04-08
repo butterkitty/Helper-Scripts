@@ -1,17 +1,16 @@
+# checkinhibitors
+
 ![image](https://user-images.githubusercontent.com/481603/114101858-57c45b00-9894-11eb-910a-a7754500d693.png)
 
 This script parses GNOME dbus output to find out what power mode inhibitors exist.  These inhibitors will disallow certain GNOME Desktop functionality on your computer (eg. logging out or going to sleep).  Currently there is not easily readable way for the average person to be able to access why their computer failed to sleep overnight.  This script was made with the intension of filling that gap in the linux ecosystem.
 
-Requirements
----
+## Requirements
 GNOME Desktop
 
-Install
----
+## Install
 clone repository
 sudo mv checkinhibitors/checkinhibitors /usr/local/bin
 sudo chmod +x /usr/local/bin/checkinhibitors
 
-Usage
----
+## Usage
 Run: checkinhibitors
