@@ -1,0 +1,25 @@
+#/bin/bash
+# Gnome inhibitor levels:
+# 1: Inhibit logging out
+# 2: Inhibit user switching
+# 4: Inhibit suspending the session or computer (sleep)
+# 8: Inhibit the session being marked as idle (sleep)
+levels=(1 2 4 8)
+
+
+inhibitors=($(dbus-send --print-reply --dest=org.gnome.SessionManager /org/gnome/SessionManager org.gnome.SessionManager.GetInhibitors | grep -i "object path" | cut -d \" -f2))
+
+echo -----
+for inhibitor in "${inhibitors[@]}"; do
+	echo Name of App: $(dbus-send --print-reply --dest=org.gnome.SessionManager $inhibitor org.gnome.SessionManager.Inhibitor.GetAppId | tail -n 1 | cut -d \" -f2)
+	echo Reason: $(dbus-send --print-reply --dest=org.gnome.SessionManager $inhibitor org.gnome.SessionManager.Inhibitor.GetReason | tail -n 1 | cut -d \" -f2)
+	inhibitorlevel=$(dbus-send --print-reply --dest=org.gnome.SessionManager $inhibitor org.gnome.SessionManager.Inhibitor.GetFlags | tail -n 1 | cut -d \" -f2 | tr -s ' ' | awk '{print $2}')
+	inhibitions=''
+	case 1 in
+	  $(( ($inhibitorlevel & ${levels[0]}) >0)) ) echo "- Inhibit logging out";;&
+	  $(( ($inhibitorlevel & ${levels[1]}) >0)) ) echo "- Inhibit user switching";;&
+	  $(( ($inhibitorlevel & ${levels[2]}) >0)) ) echo "- Inhibit suspending the session or computer (sleep)";;&
+	  $(( ($inhibitorlevel & ${levels[3]}) >0)) ) echo "- Inhibit the session being marked as idle (sleep)";;&
+	esac
+	echo -----
+done
