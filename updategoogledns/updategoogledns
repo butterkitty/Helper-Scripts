@@ -1,0 +1,67 @@
+#!/bin/bash
+#updategoogledns <zone> <recordname> <type> <newdata>
+if [ "$(dpkg-query -W --showformat='${Status}\n' google-cloud-sdk | grep "installed" | awk '{print $2}')" == "no" ]; then
+	echo "REQUIRED APT PACKAGE MISSING: google-cloud-sdk"
+	printf "\n\n"
+        exit
+fi
+
+printArguments() {
+	printf "updategoogledns <zone> <recordname> <type> <newdata>\n\n"
+	exit
+}
+
+waitPending() {
+	status=$(gcloud dns record-sets changes describe $ID --zone=$1 | tail -n 1 | awk '{print $2}')
+	echo "$(date '+%b %d %H:%M:%S') Status: $status" 
+	while [ "${status,,}" == "pending" ]; do
+		echo "$(date '+%b %d %H:%M:%S') Status: $status" 
+		sleep 3
+		status=$(gcloud dns record-sets changes describe $ID --zone=$1 | tail -n 1 | awk '{print $2}')
+	done
+	exit 0
+}
+
+if [ "$1" == "--help" ] || [ "$1" == "" ]; then
+	printArguments
+fi
+
+
+status=""
+ID=""
+newDATA=$4
+currentRECORD=$(gcloud dns record-sets list --zone=$1 --name=$2 --type=$3 | sed -n '2p')
+currentTYPE=$(echo $currentRECORD | awk '{print $2}')
+currentTTL=$(echo $currentRECORD | awk '{print $3}')
+currentDATA=$(echo $currentRECORD | awk '{print $4}')
+
+if [ "$currentDATA" == "$newDATA" ]; then
+	#printf "$(date '+%b %d %H:%M:%S') NO CHANGE IN DATA\n"
+	exit
+elif [[ $currentRECORD == "" ]]; then
+	echo "current record not found"
+	gcloud dns record-sets transaction start --zone=$1
+	gcloud dns record-sets transaction add --zone=$1 --name=$2 --ttl=300 --type=A $newDATA
+	ID=$(gcloud dns record-sets transaction execute --zone=$1 | tail -n 1 | awk '{print $1}')
+	waitPending
+fi
+echo Current Record: $currentRECORD
+
+
+read -r -t 10 -p "Is the above correct? [Y/n] " response
+case "$response" in
+	[nN][oO]|[nN])
+		printArguments
+		exit
+		;;
+	*)
+		gcloud dns record-sets transaction abort --zone=$1
+		gcloud dns record-sets transaction start --zone=$1
+		gcloud dns record-sets transaction remove --zone=$1 --name=$2 --ttl=$currentTTL --type=$currentTYPE $currentDATA
+		gcloud dns record-sets transaction add --zone=$1 --name=$2 --ttl=$currentTTL --type=$currentTYPE $newDATA
+		ID=$(gcloud dns record-sets transaction execute --zone=$1 | tail -n 1 | awk '{print $1}')
+		waitPending
+		;;
+esac
+printf "\n\n"
+
