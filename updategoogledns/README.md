@@ -1,4 +1,4 @@
-# Space Wallpaper Updater
+# Update Google DNS
 
 ## Description
 This script will automatically check a dns to see if it matches the server's current internet IP and then update that DNS record automatically if it's a Google Cloud DNS record.
