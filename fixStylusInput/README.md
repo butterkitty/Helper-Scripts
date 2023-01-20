@@ -8,6 +8,8 @@ This script will automatically, based on user input, calibrate this so the curso
 ## Known limitations
 Does not work where monitors are stacked vertically.
 
+Must be run every reboot
+
 ## Requirements
 xinput and xrandr
 
