@@ -1,4 +1,4 @@
-# Fix Ferdi's Whatsapp
+# Fix Stylus Input
 
 ## Description
 When using multiple monitors in systems using xinput, mainly Linux, the system isn't able to automatically find what surface is a touch input area for any stylus. This is especially bad for drawing as the point touched by the pen and the cursor can be full centimeters away, depending on how lard the total screen area is vs the touch area.
